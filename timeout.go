@@ -1,4 +1,4 @@
-package tools
+package timeout
 
 import (
 	"errors"
@@ -8,14 +8,14 @@ import (
 
 var ErrNoDeadlines = errors.New("TimoutConn does not support deadlines")
 
-var _ net.Conn = new(TimeoutConn)
+var _ net.Conn = new(Conn)
 
-type TimeoutConn struct {
+type Conn struct {
 	net.Conn
 	Timeout time.Duration
 }
 
-func (t *TimeoutConn) update() {
+func (t *Conn) update() {
 	if t.Timeout == 0 {
 		t.Conn.SetDeadline(time.Time{})
 		return
@@ -23,16 +23,16 @@ func (t *TimeoutConn) update() {
 	t.Conn.SetDeadline(time.Now().Add(t.Timeout))
 }
 
-func (t *TimeoutConn) Read(b []byte) (int, error) {
+func (t *Conn) Read(b []byte) (int, error) {
 	t.update()
 	return t.Read(b)
 }
 
-func (t *TimeoutConn) Write(b []byte) (int, error) {
+func (t *Conn) Write(b []byte) (int, error) {
 	t.update()
 	return t.Write(b)
 }
 
-func (t *TimeoutConn) SetDeadline(_ time.Time) error      { return ErrNoDeadlines }
-func (t *TimeoutConn) SetWriteDeadline(_ time.Time) error { return ErrNoDeadlines }
-func (t *TimeoutConn) SetReadDeadline(_ time.Time) error  { return ErrNoDeadlines }
+func (t *Conn) SetDeadline(_ time.Time) error      { return ErrNoDeadlines }
+func (t *Conn) SetWriteDeadline(_ time.Time) error { return ErrNoDeadlines }
+func (t *Conn) SetReadDeadline(_ time.Time) error  { return ErrNoDeadlines }
